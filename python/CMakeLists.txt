@@ -8,7 +8,7 @@ find_package(gtwrap REQUIRED)
 #   variables.
 set(WRAP_PYTHON_VERSION
     "Default"
-    CACHE STRING "The Python version to use for wrapping")
+    CACHE STRING "3.8.10")
 
 gtwrap_get_python_version(${WRAP_PYTHON_VERSION})
 

@@ -5,12 +5,16 @@
 # * 1. To create your own project, replace "gtsam_example" with the actual name
 #   of your project
 cmake_minimum_required(VERSION 3.9)
-project(gtsam_example CXX C)
+project(anchorSLAM CXX C)
 set(CXX_STANDARD 11)
 
 # ##############################################################################
 # * 2. Find GTSAM components so we have access to the GTSAM Cython install path
+find_package(GTSAMCMakeTools)
+
 find_package(GTSAM REQUIRED) # Uses installed package
+find_package(nlohmann_json REQUIRED)
+
 # Note: Since Jan-2019, GTSAMConfig.cmake defines exported CMake targets that
 # automatically do include the include_directories() without the need to call
 # include_directories(), just target_link_libraries(NAME gtsam)
@@ -24,14 +28,27 @@ include_directories(BEFORE "${PROJECT_SOURCE_DIR}")
 # ##############################################################################
 # * 4. Build static library from common sources. This is a common cmake step
 #   where we load all the source files and link against the GTSAM library.
-add_library(${PROJECT_NAME} SHARED cpp/greeting.h cpp/greeting.cpp
-                                   cpp/sub_dir/curse.h cpp/sub_dir/curse.cpp)
-target_link_libraries(${PROJECT_NAME} gtsam)
+add_library(extralib SHARED cpp/lib/calibration.h cpp/lib/calibration.cpp 
+                                   cpp/lib/emulator.h 
+                                   cpp/lib/factors.h 
+                                   cpp/lib/sensor.h cpp/lib/sensor.cpp
+                                   cpp/lib/util.h   cpp/lib/util.cpp)
+
+add_executable(main cpp/factorgraph.cpp)
+target_link_libraries(main gtsam nlohmann_json extralib)
+
+add_library(sensorOnly SHARED cpp/lib/sensor.h cpp/lib/sensor.cpp)
+
+# add_executable(sensorDump cpp/sensorDump.cpp)
+# target_link_libraries(sensorDump nlohmann_json sensorOnly)
+
+add_library(factorgraph cpp/mainlibrary.cpp)
+target_link_libraries(factorgraph gtsam nlohmann_json extralib)
 
 # ##############################################################################
 # * 5. Install library
 install(
-  TARGETS ${PROJECT_NAME}
+  TARGETS factorgraph
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin)
@@ -49,4 +66,5 @@ install(
 # Upto this point, we've only focused on building the C++ library. For details
 # on how to build the python wrapper, please see the CMakeLists.txt file in the
 # `python` directory.
-add_subdirectory(python)
+# add_subdirectory(python)
+
